@@ -38,6 +38,7 @@ import org.springframework.test.context.MergedContextConfiguration;
 import org.springframework.test.context.TestContextBootstrapper;
 import org.springframework.test.context.web.WebAppConfiguration;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -97,9 +98,9 @@ abstract class AbstractContextConfigurationUtilsTests {
 		assertNotNull(mergedConfig);
 		assertEquals(expectedTestClass, mergedConfig.getTestClass());
 		assertNotNull(mergedConfig.getLocations());
-		assertArrayEquals(expectedLocations, mergedConfig.getLocations());
+		assertThat(mergedConfig.getLocations()).containsExactly(expectedLocations);
 		assertNotNull(mergedConfig.getClasses());
-		assertArrayEquals(expectedClasses, mergedConfig.getClasses());
+		assertThat(mergedConfig.getClasses()).containsExactly(expectedClasses);
 		assertNotNull(mergedConfig.getActiveProfiles());
 		if (expectedContextLoaderClass == null) {
 			assertNull(mergedConfig.getContextLoader());
@@ -218,6 +219,25 @@ abstract class AbstractContextConfigurationUtilsTests {
 	@ContextConfiguration(classes = FooConfig.class, loader = GenericPropertiesContextLoader.class)
 	@ActiveProfiles("foo")
 	static class PropertiesClassesFoo {
+	}
+
+	@ContextConfiguration(classes = FooConfig.class, loader = AnnotationConfigContextLoader.class)
+	@ActiveProfiles("foo")
+	static class OuterTestCase {
+
+		class NestedTestCaseWithInheritedConfig {
+		}
+
+		@ContextConfiguration(classes = BarConfig.class)
+		@ActiveProfiles("bar")
+		class NestedTestCaseWithMergedInheritedConfig {
+		}
+
+		@ContextConfiguration(classes = BarConfig.class, inheritLocations = false)
+		@ActiveProfiles(profiles = "bar", inheritProfiles = false)
+		class NestedTestCaseWithOverriddenConfig {
+		}
+
 	}
 
 }
