@@ -36,6 +36,15 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
  */
 public class ContentDispositionTests {
 
+
+	@Test
+	public void parseTest() {
+		ContentDisposition disposition = ContentDisposition
+				.parse("form-data; name=\"foo\"; filename=\"foo.txt\"; size=123");
+		assertThat(disposition).isEqualTo(ContentDisposition.builder("form-data")
+				.name("foo").filename("foo.txt").size(123L).build());
+	}
+
 	@Test
 	public void parse() {
 		ContentDisposition disposition = ContentDisposition
@@ -79,6 +88,14 @@ public class ContentDispositionTests {
 				.parse("form-data; name=\"name\"; filename*=UTF-8''%E4%B8%AD%E6%96%87.txt");
 		assertThat(disposition).isEqualTo(ContentDisposition.builder("form-data").name("name")
 				.filename("中文.txt", StandardCharsets.UTF_8).build());
+	}
+
+	@Test // gh-23077
+	public void parseWithEscapedQuote() {
+		ContentDisposition disposition = ContentDisposition.parse(
+				"form-data; name=\"file\"; filename=\"\\\"The Twilight Zone\\\".txt\"; size=123");
+		assertThat(ContentDisposition.builder("form-data").name("file")
+				.filename("\\\"The Twilight Zone\\\".txt").size(123L).build()).isEqualTo(disposition);
 	}
 
 	@Test

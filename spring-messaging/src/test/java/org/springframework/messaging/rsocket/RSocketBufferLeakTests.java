@@ -58,6 +58,7 @@ import org.springframework.core.io.buffer.PooledDataBuffer;
 import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.rsocket.annotation.support.RSocketMessageHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.ObjectUtils;
 
@@ -86,8 +87,8 @@ public class RSocketBufferLeakTests {
 
 		server = RSocketFactory.receive()
 				.frameDecoder(PayloadDecoder.ZERO_COPY)
-				.addServerPlugin(payloadInterceptor) // intercept responding
-				.acceptor(context.getBean(MessageHandlerAcceptor.class))
+				.addResponderPlugin(payloadInterceptor) // intercept responding
+				.acceptor(context.getBean(RSocketMessageHandler.class).serverAcceptor())
 				.transport(TcpServerTransport.create("localhost", 7000))
 				.start()
 				.block();
@@ -95,7 +96,7 @@ public class RSocketBufferLeakTests {
 		requester = RSocketRequester.builder()
 				.rsocketFactory(factory -> {
 					factory.frameDecoder(PayloadDecoder.ZERO_COPY);
-					factory.addClientPlugin(payloadInterceptor); // intercept outgoing requests
+					factory.addRequesterPlugin(payloadInterceptor); // intercept outgoing requests
 				})
 				.rsocketStrategies(context.getBean(RSocketStrategies.class))
 				.connectTcp("localhost", 7000)
@@ -214,10 +215,10 @@ public class RSocketBufferLeakTests {
 		}
 
 		@Bean
-		public MessageHandlerAcceptor messageHandlerAcceptor() {
-			MessageHandlerAcceptor acceptor = new MessageHandlerAcceptor();
-			acceptor.setRSocketStrategies(rsocketStrategies());
-			return acceptor;
+		public RSocketMessageHandler messageHandler() {
+			RSocketMessageHandler handler = new RSocketMessageHandler();
+			handler.setRSocketStrategies(rsocketStrategies());
+			return handler;
 		}
 
 		@Bean

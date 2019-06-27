@@ -39,6 +39,7 @@ import org.springframework.core.codec.StringDecoder;
 import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.rsocket.annotation.support.RSocketMessageHandler;
 import org.springframework.stereotype.Controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -65,9 +66,9 @@ public class RSocketClientToServerIntegrationTests {
 		context = new AnnotationConfigApplicationContext(ServerConfig.class);
 
 		server = RSocketFactory.receive()
-				.addServerPlugin(interceptor)
+				.addResponderPlugin(interceptor)
 				.frameDecoder(PayloadDecoder.ZERO_COPY)
-				.acceptor(context.getBean(MessageHandlerAcceptor.class))
+				.acceptor(context.getBean(RSocketMessageHandler.class).serverAcceptor())
 				.transport(TcpServerTransport.create("localhost", 7000))
 				.start()
 				.block();
@@ -101,7 +102,9 @@ public class RSocketClientToServerIntegrationTests {
 				.verify(Duration.ofSeconds(5));
 
 		assertThat(interceptor.getRSocketCount()).isEqualTo(1);
-		assertThat(interceptor.getFireAndForgetCount(0)).as("Fire and forget requests did not actually complete handling on the server side").isEqualTo(3);
+		assertThat(interceptor.getFireAndForgetCount(0))
+				.as("Fire and forget requests did not actually complete handling on the server side")
+				.isEqualTo(3);
 	}
 
 	@Test
@@ -255,10 +258,10 @@ public class RSocketClientToServerIntegrationTests {
 		}
 
 		@Bean
-		public MessageHandlerAcceptor messageHandlerAcceptor() {
-			MessageHandlerAcceptor acceptor = new MessageHandlerAcceptor();
-			acceptor.setRSocketStrategies(rsocketStrategies());
-			return acceptor;
+		public RSocketMessageHandler messageHandler() {
+			RSocketMessageHandler handler = new RSocketMessageHandler();
+			handler.setRSocketStrategies(rsocketStrategies());
+			return handler;
 		}
 
 		@Bean

@@ -65,7 +65,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	public static final String SCOPE_DEFAULT = "";
 
 	/**
-	 * Constant that indicates no autowiring at all.
+	 * Constant that indicates no external autowiring at all.
 	 * @see #setAutowireMode
 	 */
 	public static final int AUTOWIRE_NO = AutowireCapableBeanFactory.AUTOWIRE_NO;
@@ -1152,7 +1152,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 	public abstract AbstractBeanDefinition cloneBeanDefinition();
 
 	@Override
-	public boolean equals(Object other) {
+	public boolean equals(@Nullable Object other) {
 		if (this == other) {
 			return true;
 		}

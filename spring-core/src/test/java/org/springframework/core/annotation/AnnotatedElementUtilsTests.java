@@ -521,9 +521,9 @@ public class AnnotatedElementUtilsTests {
 		Class<?> element = InvalidConventionBasedComposedContextConfigClass.class;
 		assertThatExceptionOfType(AnnotationConfigurationException.class).isThrownBy(() ->
 				getMergedAnnotationAttributes(element, ContextConfig.class))
-			.withMessageContaining("Different @AliasFor mirror values for annotation")
-			.withMessageContaining("attribute 'locations' and its alias 'value'")
-			.withMessageContaining("values of [{requiredLocationsDeclaration}] and [{duplicateDeclaration}]");
+				.withMessageContaining("Different @AliasFor mirror values for annotation")
+				.withMessageContaining("attribute 'locations' and its alias 'value'")
+				.withMessageContaining("values of [{requiredLocationsDeclaration}] and [{duplicateDeclaration}]");
 	}
 
 	@Test
@@ -775,9 +775,14 @@ public class AnnotatedElementUtilsTests {
 	}
 
 	@Test
+	public void javaxMetaAnnotationTypeViaFindMergedAnnotation() throws Exception {
+		assertThat(findMergedAnnotation(ParametersAreNonnullByDefault.class, Nonnull.class)).isEqualTo(ParametersAreNonnullByDefault.class.getAnnotation(Nonnull.class));
+		assertThat(findMergedAnnotation(ResourceHolder.class, Nonnull.class)).isEqualTo(ParametersAreNonnullByDefault.class.getAnnotation(Nonnull.class));
+	}
+
+	@Test
 	public void nullableAnnotationTypeViaFindMergedAnnotation() throws Exception {
 		Method method = TransactionalServiceImpl.class.getMethod("doIt");
-		assertThat(findMergedAnnotation(method, Resource.class)).isEqualTo(method.getAnnotation(Resource.class));
 		assertThat(findMergedAnnotation(method, Resource.class)).isEqualTo(method.getAnnotation(Resource.class));
 	}
 
@@ -1375,6 +1380,7 @@ public class AnnotatedElementUtilsTests {
 	}
 
 	@Resource(name = "x")
+	@ParametersAreNonnullByDefault
 	static class ResourceHolder {
 	}
 
