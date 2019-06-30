@@ -9,7 +9,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 @Configuration
 @ComponentScan(basePackages = "com.qi.learn.spring")
 @EnableAspectJAutoProxy
-public class MainConfig {
+public class AopConfig {
 	@Bean
 	public Person person() {
 
